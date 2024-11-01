@@ -15,15 +15,15 @@ async def get_db():
 
 
 @router_temp.get("/", response_model=list[schemas.Temperature])
-async def read_city(db: AsyncSession = Depends(get_db)):
+async def read_temp(db: AsyncSession = Depends(get_db)):
     return await crud.get_temp(db=db)
 
 
 @router_temp.get("/{city_id}/", response_model=schemas.Temperature)
-async def read_single_city(city_id: int, db: AsyncSession = Depends(get_db)):
+async def read_single_temp(city_id: int, db: AsyncSession = Depends(get_db)):
     temp = await crud.get_single_temp(db=db, city_id=city_id)
     if temp is None:
-        raise HTTPException(status_code=404, detail="City not found")
+        raise HTTPException(status_code=404, detail="Temperature not found")
     return temp
 
 

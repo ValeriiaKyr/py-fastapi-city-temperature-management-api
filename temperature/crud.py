@@ -2,6 +2,7 @@ import os
 
 import aiohttp
 from dotenv import load_dotenv
+from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
@@ -16,10 +17,13 @@ URL = os.getenv("URL")
 
 
 async def fetch_temperature(city_name: str) -> float:
-    async with aiohttp.ClientSession() as session:
-        async with session.get(f"{URL}key={API_KEY}&q={city_name}") as response:
-            data = await response.json()
-            return data["current"]["temp_c"]
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(f"{URL}key={API_KEY}&q={city_name}") as response:
+                data = await response.json()
+                return data["current"]["temp_c"]
+    except:
+        raise HTTPException(status_code=404, detail="Failed to connect to server")
 
 
 async def get_temperature_for_city(db: AsyncSession):
@@ -54,7 +58,7 @@ async def get_single_temp(db: AsyncSession, city_id: int):
     return await db.get(models.Temperature, city_id)
 
 
-def get_temperatures_by_city(db: Session, city_id: int):
+def get_temperatures_by_city(db: AsyncSession, city_id: int):
     return (
         db.query(models.Temperature).filter(models.Temperature.city_id == city_id).all()
     )
